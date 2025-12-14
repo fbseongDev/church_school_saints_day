@@ -1,11 +1,12 @@
 import 'dart:async';
-import 'package:church_school_saints_day/assets/musics/background_musics.dart';
 import 'package:church_school_saints_day/audio_manager.dart';
+import 'package:church_school_saints_day/colors.dart';
+import 'package:church_school_saints_day/flex_box_view.dart';
 import 'package:church_school_saints_day/models/music.dart';
 import 'package:church_school_saints_day/slide.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' hide Colors;
 import 'package:desktop_multi_window/desktop_multi_window.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
@@ -69,6 +70,8 @@ class ControllerPage extends HookWidget {
 
         context.read<CounterState>().addListener(() {
           if (windowId.value != null) {
+            audioManger.dispose();
+
             DesktopMultiWindow.invokeMethod(
               windowId.value!,
               'update',
@@ -83,58 +86,179 @@ class ControllerPage extends HookWidget {
     }, const []);
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('Controller'),
-        backgroundColor: Colors.white,
-      ),
-      body: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(currentSlide.name, style: const TextStyle(fontSize: 48)),
-          const SizedBox(height: 20),
-          Wrap(
-            spacing: 12,
-            children: [
-              if (counter > 0)
-                _screenBtn('이전', () => context.read<CounterState>().add(-1)),
-              if (counter < Slide.values.length - 1)
-                _screenBtn('다음', () => context.read<CounterState>().add(1)),
-            ],
-          ),
-          SizedBox(height: 16),
-          Expanded(
-            child: ListView.separated(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              scrollDirection: Axis.horizontal,
-              itemBuilder: (_, index) {
-                return Column(
-                  children: [_audioBtn(music: currentSlide.musics[index])],
-                );
-              },
-              separatorBuilder: (_, index) {
-                return SizedBox(width: 5);
-              },
-              itemCount: currentSlide.musics.length,
+      backgroundColor: Colors.darkGrey,
+      body: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.lightGrey,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              padding: EdgeInsets.symmetric(vertical: 32),
+              width: double.infinity,
+              alignment: Alignment.center,
+              child: Text(
+                '${counter + 1}. ${currentSlide.name}',
+                style: const TextStyle(
+                  fontSize: 48,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
-          ),
-        ],
+            SizedBox(height: 5),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.lightGrey,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              padding: EdgeInsets.all(5),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '배경음',
+                        style: TextStyle(color: Colors.grey, height: 1, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 5),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.darkGrey,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    width: double.infinity,
+                    padding: EdgeInsets.all(5),
+                    child: currentSlide.backgrounds.isEmpty
+                        ? Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
+                            child: Container(
+                              alignment: Alignment.centerLeft,
+                              constraints: BoxConstraints(minHeight: 24),
+                              child: Text(
+                                '배경음이 없습니다',
+                                style: TextStyle(color: Colors.grey, height: 1),
+                              ),
+                            ),
+                          )
+                        : FlexBoxView.builder(
+                            spacing: 5,
+                            runSpacing: 5,
+                            itemBuilder: (_, index) {
+                              return Column(
+                                key: ValueKey('$counter-1-$index'),
+                                children: [
+                                  _audioBtn(
+                                    music: currentSlide.backgrounds[index],
+                                  ),
+                                ],
+                              );
+                            },
+                            itemCount: currentSlide.backgrounds.length,
+                          ),
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 5),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.lightGrey,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              padding: EdgeInsets.all(5),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '효과음',
+                        style: TextStyle(color: Colors.grey, height: 1, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 5),
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.darkGrey,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    width: double.infinity,
+                    padding: EdgeInsets.all(5),
+                    child: currentSlide.effects.isEmpty
+                        ? Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
+                            child: Container(
+                              alignment: Alignment.centerLeft,
+                              constraints: BoxConstraints(minHeight: 24),
+                              child: Text(
+                                '효과음이 없습니다',
+                                style: TextStyle(color: Colors.grey, height: 1),
+                              ),
+                            ),
+                          )
+                        : FlexBoxView.builder(
+                            spacing: 5,
+                            runSpacing: 5,
+                            itemBuilder: (_, index) {
+                              return SizedBox(
+                                key: ValueKey('$counter-2-$index'),
+                                child: _audioBtn(
+                                  music: currentSlide.effects[index],
+                                ),
+                              );
+                            },
+                            itemCount: currentSlide.effects.length,
+                          ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 5),
+            Row(
+              spacing: 5,
+              children: [
+                if (counter > 0)
+                  _screenBtn(CupertinoIcons.chevron_left, () => context.read<CounterState>().add(-1)),
+                if (counter < Slide.values.length - 1)
+                  _screenBtn(CupertinoIcons.chevron_right, () => context.read<CounterState>().add(1)),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _screenBtn(String text, VoidCallback onTap) {
-    return ElevatedButton(
-      onPressed: onTap,
+  Widget _screenBtn(IconData icon, VoidCallback onTap) {
+    return Expanded(
+      child: ElevatedButton(
+        onPressed: onTap,
 
-      style: ElevatedButton.styleFrom(
-        padding: EdgeInsets.all(24),
-        backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        side: const BorderSide(color: Colors.blue, width: 1),
-        overlayColor: Colors.white70,
-      ),
-      child: Text(text, style: TextStyle(color: Colors.black)),
+        style: ElevatedButton.styleFrom(
+          padding: EdgeInsets.all(24),
+          backgroundColor: Colors.lightGrey,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          overlayColor: Colors.white,
+        ),
+        child: Icon(icon, color: Colors.white, size: 20)),
     );
   }
 
@@ -143,8 +267,8 @@ class ControllerPage extends HookWidget {
       builder: (context) {
         final isPlaying = useState(false);
 
-        return ElevatedButton(
-          onPressed: () async {
+        return GestureDetector(
+          onTap: () async {
             if (isPlaying.value) {
               isPlaying.value = false;
               await audioManger.stop(music.path);
@@ -154,23 +278,25 @@ class ControllerPage extends HookWidget {
             await audioManger.playAsset(music.path);
           },
 
-          style: ElevatedButton.styleFrom(
-            padding: EdgeInsets.all(24),
-            backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(9),
+              color: Colors.lightGrey,
             ),
-            side: const BorderSide(color: Colors.grey, width: 1),
-            overlayColor: Colors.white70,
-          ),
-          child: Row(
-            children: [
-              Text(music.name, style: TextStyle(color: Colors.black)),
-              if (isPlaying.value)
-                Icon(Icons.pause)
-              else
-                Icon(Icons.play_arrow, color: Colors.grey,),
-            ],
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  music.name,
+                  style: TextStyle(color: Colors.white, height: 1),
+                ),
+                if (isPlaying.value)
+                  Icon(Icons.pause, color: Colors.white)
+                else
+                  Icon(Icons.play_arrow, color: Colors.grey),
+              ],
+            ),
           ),
         );
       },
@@ -210,9 +336,11 @@ class DisplayPage extends HookWidget {
       child: Stack(
         alignment: Alignment.bottomRight,
         children: [
-          Image(
-            image: slides[value.value.clamp(0, slides.length - 1)].screen,
-            fit: BoxFit.cover,
+          Positioned.fill(
+            child: Image(
+              image: slides[value.value.clamp(0, slides.length - 1)].screen,
+              fit: BoxFit.cover,
+            ),
           ),
           Container(
             padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
