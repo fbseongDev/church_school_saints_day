@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:church_school_saints_day/assets/musics/background_musics.dart';
 import 'package:church_school_saints_day/audio_manager.dart';
+import 'package:church_school_saints_day/models/music.dart';
 import 'package:church_school_saints_day/slide.dart';
 import 'package:flutter/material.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
@@ -80,7 +81,11 @@ class ControllerPage extends HookWidget {
     }, const []);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Controller')),
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text('Controller'),
+        backgroundColor: Colors.white,
+      ),
       body: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -90,26 +95,19 @@ class ControllerPage extends HookWidget {
             spacing: 12,
             children: [
               if (counter > 0)
-                _btn('이전', () => context.read<CounterState>().add(-1)),
+                _screenBtn('이전', () => context.read<CounterState>().add(-1)),
               if (counter < Slide.values.length - 1)
-                _btn('다음', () => context.read<CounterState>().add(1)),
+                _screenBtn('다음', () => context.read<CounterState>().add(1)),
             ],
           ),
+          SizedBox(height: 16),
           Expanded(
             child: ListView.separated(
+              padding: EdgeInsets.symmetric(horizontal: 16),
               scrollDirection: Axis.horizontal,
               itemBuilder: (_, index) {
-                return GestureDetector(
-                  onTap: () async {
-                    audioManger.playAsset(currentSlide.musics[index].path);
-                  },
-                  child: Center(
-                    child: Container(
-                      padding: EdgeInsets.all(16),
-                      color: Colors.green,
-                      child: Text(currentSlide.musics[index].name),
-                    ),
-                  ),
+                return Column(
+                  children: [_audioBtn(music: currentSlide.musics[index])],
                 );
               },
               separatorBuilder: (_, index) {
@@ -123,8 +121,58 @@ class ControllerPage extends HookWidget {
     );
   }
 
-  Widget _btn(String text, VoidCallback onTap) {
-    return ElevatedButton(onPressed: onTap, child: Text(text));
+  Widget _screenBtn(String text, VoidCallback onTap) {
+    return ElevatedButton(
+      onPressed: onTap,
+
+      style: ElevatedButton.styleFrom(
+        padding: EdgeInsets.all(24),
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        side: const BorderSide(color: Colors.blue, width: 1),
+        overlayColor: Colors.white70,
+      ),
+      child: Text(text, style: TextStyle(color: Colors.black)),
+    );
+  }
+
+  Widget _audioBtn({required Music music}) {
+    return HookBuilder(
+      builder: (context) {
+        final isPlaying = useState(false);
+
+        return ElevatedButton(
+          onPressed: () async {
+            if (isPlaying.value) {
+              isPlaying.value = false;
+              await audioManger.stop(music.path);
+              return;
+            }
+            isPlaying.value = true;
+            await audioManger.playAsset(music.path);
+          },
+
+          style: ElevatedButton.styleFrom(
+            padding: EdgeInsets.all(24),
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            side: const BorderSide(color: Colors.grey, width: 1),
+            overlayColor: Colors.white70,
+          ),
+          child: Row(
+            children: [
+              Text(music.name, style: TextStyle(color: Colors.black)),
+              if (isPlaying.value)
+                Icon(Icons.pause)
+              else
+                Icon(Icons.play_arrow, color: Colors.grey,),
+            ],
+          ),
+        );
+      },
+    );
   }
 }
 
@@ -160,18 +208,21 @@ class DisplayPage extends HookWidget {
       child: Stack(
         alignment: Alignment.bottomRight,
         children: [
-
           Image(
             image: slides[value.value.clamp(0, slides.length - 1)].screen,
             fit: BoxFit.cover,
           ),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 16,vertical: 8),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             margin: EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(color: Colors.black.withAlpha(200)),
             child: Text(
               slides[value.value.clamp(0, slides.length - 1)].name,
-              style: TextStyle(fontSize: 52, fontWeight: FontWeight.w700,color: Colors.white),
+              style: TextStyle(
+                fontSize: 52,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
             ),
           ),
         ],
