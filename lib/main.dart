@@ -10,6 +10,8 @@ import 'package:provider/provider.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
 void main(List<String> args) {
+  WidgetsFlutterBinding.ensureInitialized();
+
   if (args.isNotEmpty) {
     // 두 번째 창
     runApp(const DisplayApp());
