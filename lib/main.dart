@@ -369,7 +369,6 @@ class DisplayPage extends HookWidget {
     }, const []);
 
     final slides = Slide.values;
-
     return Material(
       child: Stack(
         alignment: Alignment.bottomRight,
@@ -387,7 +386,8 @@ class DisplayPage extends HookWidget {
             child: Text(
               slides[value.value.clamp(0, slides.length - 1)].name,
               style: TextStyle(
-                fontSize: 52,
+
+                fontSize: MediaQuery.of(context).size.width/10,
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
               ),
