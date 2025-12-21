@@ -64,9 +64,9 @@ class DisplayPage extends HookWidget {
     return RawKeyboardListener(
       focusNode: focusNode,
       autofocus: true,
-      onFocusChange: (hasFocus) {
-        dev.log('RawKeyboardListener focus changed: $hasFocus', name: 'Display');
-      },
+      // : (hasFocus) {
+      //   dev.log('RawKeyboardListener focus changed: $hasFocus', name: 'Display');
+      // },
       onKey: (event) {
         dev.log(
           'Key event: runtimeType=${event.runtimeType}, logicalKey=${event.logicalKey}, keyLabel=${event.logicalKey.keyLabel}',
