@@ -15,7 +15,6 @@ import 'display_screen.dart';
 
 void main(List<String> args) async{
   WidgetsFlutterBinding.ensureInitialized();
-  await windowManager.ensureInitialized();
 
   if (args.isNotEmpty) {
     // 두 번째 창
