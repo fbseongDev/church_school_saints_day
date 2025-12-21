@@ -15,14 +15,22 @@ import 'package:flutter/services.dart';
 import 'display_screen.dart';
 
 void main(List<String> args) async {
+  // 1. 바인딩 초기화 필수
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 2. windowManager 초기화 (에러 방지를 위해 비동기 대기)
   await windowManager.ensureInitialized();
 
   if (args.isNotEmpty) {
-    // 두 번째 창
+    // 두 번째 창 (DisplayApp)
     runApp(const DisplayApp());
   } else {
-    // 첫 번째 창
+    // 메인 창 (ControllerApp)
+    // 창이 준비되면 화면에 표시
+    await windowManager.waitUntilReadyToShow(null, () async {
+      await windowManager.show();
+      await windowManager.focus();
+    });
     runApp(const ControllerApp());
   }
 }
