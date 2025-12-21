@@ -9,11 +9,13 @@ import 'package:flutter/material.dart' hide Colors;
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:window_manager/window_manager.dart';
 
 import 'display_screen.dart';
 
-void main(List<String> args) {
+void main(List<String> args) async{
   WidgetsFlutterBinding.ensureInitialized();
+  await windowManager.ensureInitialized();
 
   if (args.isNotEmpty) {
     // 두 번째 창
