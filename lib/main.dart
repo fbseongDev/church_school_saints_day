@@ -61,6 +61,8 @@ class ControllerPage extends HookWidget {
 
     final currentSlide = Slide.values[counter];
 
+    final volume = useState(1.0);
+
     useEffect(() {
       Future<void> openSecondWindow() async {
         final window = await DesktopMultiWindow.createWindow('display');
@@ -127,7 +129,11 @@ class ControllerPage extends HookWidget {
                     children: [
                       Text(
                         '배경음',
-                        style: TextStyle(color: Colors.grey, height: 1, fontSize: 12),
+                        style: TextStyle(
+                          color: Colors.grey,
+                          height: 1,
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   ),
@@ -180,6 +186,25 @@ class ControllerPage extends HookWidget {
                 borderRadius: BorderRadius.circular(16),
               ),
               padding: EdgeInsets.all(5),
+              child: Slider(
+                value: volume.value,
+                min: 0.0,
+                max: 1.0,
+                inactiveColor: Colors.darkGrey,
+                activeColor: Colors.grey,
+                onChanged: (value) {
+                  volume.value = value;
+                  audioManger.setAllVolume(value);
+                },
+              ),
+            ),
+            SizedBox(height: 5),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.lightGrey,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              padding: EdgeInsets.all(5),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -188,7 +213,11 @@ class ControllerPage extends HookWidget {
                     children: [
                       Text(
                         '효과음',
-                        style: TextStyle(color: Colors.grey, height: 1, fontSize: 12),
+                        style: TextStyle(
+                          color: Colors.grey,
+                          height: 1,
+                          fontSize: 12,
+                        ),
                       ),
                     ],
                   ),
@@ -237,9 +266,17 @@ class ControllerPage extends HookWidget {
               spacing: 5,
               children: [
                 if (counter > 0)
-                  _screenBtn(CupertinoIcons.chevron_left, () => context.read<CounterState>().add(-1)),
+                  _screenBtn(CupertinoIcons.chevron_left, () {
+                    volume.value = 1.0;
+
+                    context.read<CounterState>().add(-1);
+                  }),
                 if (counter < Slide.values.length - 1)
-                  _screenBtn(CupertinoIcons.chevron_right, () => context.read<CounterState>().add(1)),
+                  _screenBtn(CupertinoIcons.chevron_right, () {
+                    volume.value = 1.0;
+
+                    context.read<CounterState>().add(1);
+                  }),
               ],
             ),
           ],
@@ -261,7 +298,8 @@ class ControllerPage extends HookWidget {
           ),
           overlayColor: Colors.white,
         ),
-        child: Icon(icon, color: Colors.white, size: 20)),
+        child: Icon(icon, color: Colors.white, size: 20),
+      ),
     );
   }
 
@@ -274,11 +312,11 @@ class ControllerPage extends HookWidget {
           onTap: () async {
             if (isPlaying.value) {
               isPlaying.value = false;
-              await audioManger.stop(music.path);
+              await audioManger.stop(music);
               return;
             }
             isPlaying.value = true;
-            await audioManger.playAsset(music.path);
+            await audioManger.playAsset(music);
           },
 
           child: Container(
