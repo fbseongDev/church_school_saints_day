@@ -9,28 +9,15 @@ import 'package:flutter/material.dart' hide Colors;
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:window_manager/window_manager.dart';
-import 'package:flutter/services.dart';
 
-import 'display_screen.dart';
-
-void main(List<String> args) async {
-  // 1. 바인딩 초기화 필수
+void main(List<String> args) {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 2. windowManager 초기화 (에러 방지를 위해 비동기 대기)
-  await windowManager.ensureInitialized();
-
   if (args.isNotEmpty) {
-    // 두 번째 창 (DisplayApp)
+    // 두 번째 창
     runApp(const DisplayApp());
   } else {
-    // 메인 창 (ControllerApp)
-    // 창이 준비되면 화면에 표시
-    await windowManager.waitUntilReadyToShow(null, () async {
-      await windowManager.show();
-      await windowManager.focus();
-    });
+    // 첫 번째 창
     runApp(const ControllerApp());
   }
 }
@@ -355,86 +342,3 @@ class ControllerPage extends HookWidget {
   }
 }
 
-class DisplayApp extends StatelessWidget {
-  const DisplayApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(home: const DisplayPage());
-  }
-}
-
-class DisplayPage extends HookWidget {
-  const DisplayPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final value = useState<int>(0);
-    // 전체화면 상태 관리
-    final isFullScreen = useState<bool>(false);
-
-    useEffect(() {
-      DesktopMultiWindow.setMethodHandler((call, fromWindowId) async {
-        if (call.method == 'update') {
-          value.value = call.arguments as int;
-        }
-      });
-      return null;
-    }, const []);
-
-    // 전체화면 토글 함수
-    Future<void> toggleFullScreen() async {
-      final isFull = await windowManager.isFullScreen();
-      if (isFull) {
-        await windowManager.setFullScreen(false);
-        isFullScreen.value = false;
-      } else {
-        await windowManager.setFullScreen(true);
-        isFullScreen.value = true;
-      }
-    }
-
-    final slides = Slide.values;
-
-    // CallbackShortcuts로 'f' 키 감지
-    return CallbackShortcuts(
-      bindings: {
-        const SingleActivator(LogicalKeyboardKey.keyF): () {
-          toggleFullScreen();
-        },
-      },
-      child: Focus(
-        autofocus: true, // 창이 열리자마자 키 입력을 받을 수 있게 함
-        child: Material(
-          child: Stack(
-            alignment: Alignment.bottomRight,
-            children: [
-              Positioned.fill(
-                child: Image(
-                  image: slides[value.value.clamp(0, slides.length - 1)].screen,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                margin: const EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(color: Colors.black.withAlpha(200)),
-                child: Text(
-                  slides[value.value.clamp(0, slides.length - 1)].name,
-                  style: TextStyle(
-                    fontSize: MediaQuery.of(context).size.width / 13,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
