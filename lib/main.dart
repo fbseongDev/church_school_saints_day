@@ -10,6 +10,8 @@ import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 
+import 'display_screen.dart';
+
 void main(List<String> args) {
   WidgetsFlutterBinding.ensureInitialized();
 
