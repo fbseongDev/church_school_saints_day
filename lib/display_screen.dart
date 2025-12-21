@@ -1,3 +1,4 @@
+import 'dart:developer' as dev;
 import 'package:church_school_saints_day/slide.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
@@ -20,10 +21,15 @@ class DisplayPage extends HookWidget {
   Widget build(BuildContext context) {
     final value = useState<int>(0);
     final isFullscreen = useState<bool>(false);
-    final focusNode = useFocusNode();
+    final focusNode = useFocusNode(debugLabel: 'display-keyboard-focus');
 
     useEffect(() {
+      dev.log('useEffect mounted: DisplayPage', name: 'Display');
       DesktopMultiWindow.setMethodHandler((call, fromWindowId) async {
+        dev.log(
+          'MethodHandler called: method=${call.method}, args=${call.arguments}, fromWindowId=$fromWindowId',
+          name: 'Display',
+        );
         if (call.method == 'update') {
           value.value = call.arguments as int;
         }
@@ -34,18 +40,41 @@ class DisplayPage extends HookWidget {
     final slides = Slide.values;
     void toggleFullscreen() {
       isFullscreen.value = !isFullscreen.value;
-      if (isFullscreen.value) {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-      } else {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      dev.log(
+        'toggleFullscreen called -> isFullscreen=${isFullscreen.value}',
+        name: 'Display',
+      );
+      try {
+        if (isFullscreen.value) {
+          dev.log('Setting SystemUiMode.immersiveSticky', name: 'Display');
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+        } else {
+          dev.log('Setting SystemUiMode.edgeToEdge', name: 'Display');
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+        }
+      } catch (e, s) {
+        dev.log(
+          'SystemChrome error: $e',
+          name: 'Display',
+          stackTrace: s,
+          level: 1000,
+        );
       }
     }
     return RawKeyboardListener(
       focusNode: focusNode,
       autofocus: true,
+      onFocusChange: (hasFocus) {
+        dev.log('RawKeyboardListener focus changed: $hasFocus', name: 'Display');
+      },
       onKey: (event) {
+        dev.log(
+          'Key event: runtimeType=${event.runtimeType}, logicalKey=${event.logicalKey}, keyLabel=${event.logicalKey.keyLabel}',
+          name: 'Display',
+        );
         if (event is RawKeyDownEvent &&
             event.logicalKey == LogicalKeyboardKey.keyF) {
+          dev.log('F key detected -> toggling fullscreen', name: 'Display');
           toggleFullscreen();
         }
       },
