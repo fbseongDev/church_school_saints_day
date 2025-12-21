@@ -1,6 +1,10 @@
 import 'package:church_school_saints_day/models/music.dart';
 
 abstract final class EffectMusics {
+  static const Music boat = EffectMusic(
+    path: 'assets/musics/effects/boat.mp3',
+    name: '뱃고동',
+  );
   static const Music closing = EffectMusic(
     path: 'assets/musics/effects/closing.m4a',
     name: '문 닫기',
@@ -26,5 +30,12 @@ abstract final class EffectMusics {
     name: '샤랄랑',
   );
 
-  static const List<Music> values = [closing, fighting, opening, pigs, twinkle];
+  static const List<Music> values = [
+    boat,
+    closing,
+    fighting,
+    opening,
+    pigs,
+    twinkle,
+  ];
 }

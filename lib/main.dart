@@ -9,18 +9,15 @@ import 'package:flutter/material.dart' hide Colors;
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:window_manager/window_manager.dart';
-import 'package:flutter/services.dart'; // 이거 필수!
 
-void main(List<String> args) async { // async 추가
+void main(List<String> args) {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // window_manager 초기화 (데스크톱 앱 필수 설정)
-  await windowManager.ensureInitialized();
-
   if (args.isNotEmpty) {
+    // 두 번째 창
     runApp(const DisplayApp());
   } else {
+    // 첫 번째 창
     runApp(const ControllerApp());
   }
 }
@@ -373,47 +370,30 @@ class DisplayPage extends HookWidget {
 
     final slides = Slide.values;
 
-    // 2. 전체 화면 토글 함수
-    Future<void> toggleFullScreen() async {
-      bool isFullScreen = await windowManager.isFullScreen();
-      await windowManager.setFullScreen(!isFullScreen);
-    }
-
-    return Scaffold( // 3. KeyboardListener를 위해 Scaffold나 Focus 사용
-      body: KeyboardListener(
-        focusNode: FocusNode()..requestFocus(), // 키보드 입력을 받기 위해 포커스 필요
-        onKeyEvent: (KeyEvent event) {
-          // F11 키가 눌렸을 때만 실행
-          if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.f11) {
-            toggleFullScreen();
-          }
-        },
-        child: Material(
-          child: Stack(
-            alignment: Alignment.bottomRight,
-            children: [
-              Positioned.fill(
-                child: Image(
-                  image: slides[value.value.clamp(0, slides.length - 1)].screen,
-                  fit: BoxFit.cover,
-                ),
-              ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                margin: EdgeInsets.only(bottom: 16),
-                decoration: BoxDecoration(color: Colors.black.withAlpha(200)),
-                child: Text(
-                  slides[value.value.clamp(0, slides.length - 1)].name,
-                  style: TextStyle(
-                    fontSize: 52,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
+    return Material(
+      child: Stack(
+        alignment: Alignment.bottomRight,
+        children: [
+          Positioned.fill(
+            child: Image(
+              image: slides[value.value.clamp(0, slides.length - 1)].screen,
+              fit: BoxFit.cover,
+            ),
           ),
-        ),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            margin: EdgeInsets.only(bottom: 16),
+            decoration: BoxDecoration(color: Colors.black.withAlpha(200)),
+            child: Text(
+              slides[value.value.clamp(0, slides.length - 1)].name,
+              style: TextStyle(
+                fontSize: 52,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
