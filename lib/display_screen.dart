@@ -4,6 +4,7 @@ import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter/services.dart';
+import 'package:window_manager/window_manager.dart';
 
 class DisplayApp extends StatelessWidget {
   const DisplayApp({super.key});
@@ -37,28 +38,29 @@ class DisplayPage extends HookWidget {
       return null;
     }, const []);
 
+    useEffect(() {
+      () async {
+        dev.log('Initializing window_manager', name: 'Display');
+        await windowManager.ensureInitialized();
+        await windowManager.setPreventClose(true);
+        await windowManager.setSkipTaskbar(false);
+      }();
+      return null;
+    }, const []);
+
     final slides = Slide.values;
-    void toggleFullscreen() {
-      isFullscreen.value = !isFullscreen.value;
+    void toggleFullscreen() async {
+      final isNowFullscreen = await windowManager.isFullScreen();
       dev.log(
-        'toggleFullscreen called -> isFullscreen=${isFullscreen.value}',
+        'toggleFullscreen called -> currentFullscreen=$isNowFullscreen',
         name: 'Display',
       );
-      try {
-        if (isFullscreen.value) {
-          dev.log('Setting SystemUiMode.immersiveSticky', name: 'Display');
-          SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-        } else {
-          dev.log('Setting SystemUiMode.edgeToEdge', name: 'Display');
-          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-        }
-      } catch (e, s) {
-        dev.log(
-          'SystemChrome error: $e',
-          name: 'Display',
-          stackTrace: s,
-          level: 1000,
-        );
+      if (isNowFullscreen) {
+        dev.log('Exiting fullscreen (window_manager)', name: 'Display');
+        await windowManager.setFullScreen(false);
+      } else {
+        dev.log('Entering fullscreen (window_manager)', name: 'Display');
+        await windowManager.setFullScreen(true);
       }
     }
     return RawKeyboardListener(
@@ -68,14 +70,16 @@ class DisplayPage extends HookWidget {
       //   dev.log('RawKeyboardListener focus changed: $hasFocus', name: 'Display');
       // },
       onKey: (event) {
-        dev.log(
-          'Key event: runtimeType=${event.runtimeType}, logicalKey=${event.logicalKey}, keyLabel=${event.logicalKey.keyLabel}',
-          name: 'Display',
-        );
-        if (event is RawKeyDownEvent &&
-            event.logicalKey == LogicalKeyboardKey.keyF) {
-          dev.log('F key detected -> toggling fullscreen', name: 'Display');
-          toggleFullscreen();
+        if (event is RawKeyDownEvent) {
+          dev.log(
+            'KeyDown detected: ${event.logicalKey.keyLabel}',
+            name: 'Display',
+          );
+          if (event.logicalKey == LogicalKeyboardKey.keyF ||
+              event.logicalKey == LogicalKeyboardKey.f11) {
+            dev.log('Fullscreen key detected -> toggling', name: 'Display');
+            toggleFullscreen();
+          }
         }
       },
       child: Material(
