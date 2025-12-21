@@ -14,8 +14,9 @@ import 'package:flutter/services.dart';
 
 import 'display_screen.dart';
 
-void main(List<String> args) async{
+void main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
+  await windowManager.ensureInitialized();
 
   if (args.isNotEmpty) {
     // 두 번째 창
@@ -407,7 +408,10 @@ class DisplayPage extends HookWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(color: Colors.black.withAlpha(200)),
                 child: Text(
