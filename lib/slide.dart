@@ -28,7 +28,7 @@ enum Slide {
     name: '이방나라',
     screen: Images.nation,
     backgrounds: [BackgroundMusics.narration],
-    effects: [],
+    effects: [EffectMusics.boat],
   ),
   scene5(
     name: '노래방',
